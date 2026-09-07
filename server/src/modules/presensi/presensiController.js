@@ -245,4 +245,36 @@ const getTodayStatus = async (req, res) => {
   }
 };
 
-module.exports = { clockIn, clockOut, getTodayStatus };
+// Ambil Riwayat Presensi
+const getPresensiHistory = async (req, res) => {
+  const userId = req.user.user_id;
+  const { start_date, end_date } = req.query;
+
+  try {
+    let sql = 'SELECT * FROM presensi WHERE user_id = ?';
+    const params = [userId];
+
+    if (start_date && end_date) {
+      sql += ' AND tanggal BETWEEN ? AND ?';
+      params.push(start_date, end_date);
+    }
+
+    sql += ' ORDER BY tanggal DESC, waktu_presensi DESC';
+
+    const rows = await query(sql, params);
+
+    return res.status(200).json({
+      status: 'success',
+      data: rows
+    });
+  } catch (error) {
+    console.error('GetPresensiHistory Error Detail:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: error.message,
+      sqlMessage: error.sqlMessage || null
+    });
+  }
+};
+
+module.exports = { clockIn, clockOut, getTodayStatus, getPresensiHistory };

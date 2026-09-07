@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { clockIn, clockOut, getTodayStatus } = require('./presensiController');
+const { clockIn, clockOut, getTodayStatus, getPresensiHistory } = require('./presensiController');
 const { authenticateJWT, authorizeRole } = require('../../middlewares/authMiddleware');
 const uploadPresensi = require('../../utils/upload');
 
@@ -23,6 +23,13 @@ router.get(
   '/today',
   authenticateJWT,
   getTodayStatus
+);
+
+// GET /api/v1/presensi/histori
+router.get(
+  '/histori',
+  authenticateJWT,
+  getPresensiHistory
 );
 
 // POST /api/v1/presensi/clock-in
