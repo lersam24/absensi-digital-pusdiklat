@@ -9,6 +9,7 @@ const { pool } = require('./config/db');
 const authRoutes = require('./modules/auth/authRoutes');
 const presensiRoutes = require('./modules/presensi/presensiRoutes'); // <--- Import ini
 const jurnalRoutes = require('./modules/jurnal/jurnalRoutes');
+const adminRoutes = require('./modules/admin/adminRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +27,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../storage/uploads')));
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/presensi', presensiRoutes); // <--- Tambahkan ini
 app.use('/api/v1/jurnal', jurnalRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 // Health Check Route
 app.get('/api/v1/health', async (req, res) => {
