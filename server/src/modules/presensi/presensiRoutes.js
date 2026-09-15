@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { clockIn, clockOut, getTodayStatus, getPresensiHistory } = require('./presensiController');
 const { authenticateJWT, authorizeRole } = require('../../middlewares/authMiddleware');
-const uploadPresensi = require('../../utils/upload');
+const { uploadPresensi, processFotoPresensi } = require('../../utils/upload');
 
 // Wrapper Middleware untuk menangani upload & error multer
 const handleUpload = (req, res, next) => {
@@ -38,6 +38,7 @@ router.post(
   authenticateJWT,
   authorizeRole('peserta', 'admin'),
   handleUpload,
+  processFotoPresensi,
   clockIn
 );
 
@@ -47,6 +48,7 @@ router.post(
   authenticateJWT,
   authorizeRole('peserta', 'admin'),
   handleUpload,
+  processFotoPresensi,
   clockOut
 );
 

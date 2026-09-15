@@ -1,6 +1,12 @@
 const { query } = require('../../config/db');
 const { getDistanceInMeters } = require('../../utils/haversine');
 
+// Sanitasi angka: pastikan bertipe Number dan tidak NaN/undefined sebelum dipakai di query
+const toNumber = (value, fallback = 0) => {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+};
+
 // Clock-In (Presensi Masuk)
 const clockIn = async (req, res) => {
   console.log('=== DEBUG PRESENSI ===');
@@ -22,6 +28,11 @@ const clockIn = async (req, res) => {
   try {
     const todayDate = new Date().toISOString().split('T')[0];
 
+    // Sanitasi nilai numerik sebelum dipakai oleh query
+    const lat = toNumber(req.body.latitude);
+    const lng = toNumber(req.body.longitude);
+    const akurasiGps = toNumber(req.body.akurasi_gps, 0);
+
     // Cek apakah hari ini sudah melakukan clock-in
     const existing = await query(
       'SELECT presensi_id FROM presensi WHERE user_id = ? AND tanggal = ?',
@@ -42,14 +53,18 @@ const clockIn = async (req, res) => {
     const workStartTime = config.jam_masuk_standar || '08:00:00';
 
     // Hitung jarak user ke lokasi kantor
-    const distance = getDistanceInMeters(
-      parseFloat(latitude),
-      parseFloat(longitude),
-      officeLat,
-      officeLng
-    );
+    const distance = getDistanceInMeters(lat, lng, officeLat, officeLng);
 
     const isRadiusValid = distance <= maxRadius;
+
+    // Strict geofencing: tolak presensi bila di luar radius yang diizinkan
+    if (!isRadiusValid) {
+      const jarakMeter = Math.round(distance);
+      const radius = Math.round(maxRadius);
+      return res.status(400).json({
+        message: `Gagal presensi: Jarak Anda (${jarakMeter}m) melebihi radius lokasi yang diizinkan (${radius}m).`
+      });
+    }
 
     // Tentukan status keterlambatan
     const now = new Date();
@@ -58,20 +73,22 @@ const clockIn = async (req, res) => {
     
     // Pastikan variabel fotoFilename terdefinisi dari req.file.filename
     const fotoFilename = req.file ? req.file.filename : null;
+    const jarakMeter = Math.round(distance);
 
     // Query INSERT disesuaikan dengan skema tabel presensi asli
     await query(
       `INSERT INTO presensi 
-       (user_id, tipe_presensi, waktu_presensi, tanggal, latitude, longitude, jarak_meter, foto_url) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       (user_id, tipe_presensi, waktu_presensi, tanggal, latitude, longitude, akurasi_gps, jarak_meter, foto_url) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         req.user.user_id,
         'masuk',
         new Date(),
         todayDate,
-        parseFloat(req.body.latitude),
-        parseFloat(req.body.longitude),
-        Math.round(distance),
+        lat,
+        lng,
+        akurasiGps,
+        jarakMeter,
         fotoFilename
       ]
     );
@@ -83,16 +100,14 @@ const clockIn = async (req, res) => {
         tanggal: todayDate,
         jam_masuk: currentTimeStr,
         status_kehadiran: statusKehadiran,
-        jarak_meter: Math.round(distance),
+        jarak_meter: jarakMeter,
         dalam_radius: isRadiusValid
       }
     });
   } catch (error) {
-    console.error('ClockIn Error Detail:', error);
-    return res.status(500).json({ 
-      status: 'error', 
-      message: error.message,
-      sqlMessage: error.sqlMessage || null 
+    console.error(error);
+    return res.status(500).json({
+      message: error.message
     });
   }
 };
@@ -117,6 +132,11 @@ const clockOut = async (req, res) => {
 
   try {
     const todayDate = new Date().toISOString().split('T')[0];
+
+    // Sanitasi nilai numerik sebelum dipakai oleh query
+    const lat = toNumber(req.body.latitude);
+    const lng = toNumber(req.body.longitude);
+    const akurasiGps = toNumber(req.body.akurasi_gps, 0);
 
     // Cek apakah pengguna sudah pernah clock-in hari ini
     const existingIn = await query(
@@ -153,37 +173,35 @@ const clockOut = async (req, res) => {
     const maxRadius = parseFloat(config.radius_meter || 50);
 
     // Hitung jarak user ke lokasi kantor
-    const distance = getDistanceInMeters(
-      parseFloat(latitude),
-      parseFloat(longitude),
-      officeLat,
-      officeLng
-    );
+    const distance = getDistanceInMeters(lat, lng, officeLat, officeLng);
 
-    // Validasi jarak
+    // Validasi jarak (strict geofencing)
     if (distance > maxRadius) {
+      const jarakMeter = Math.round(distance);
+      const radius = Math.round(maxRadius);
       return res.status(400).json({
-        status: 'fail',
-        message: 'Gagal melakukan presensi pulang karena Anda berada di luar radius lokasi yang diizinkan.'
+        message: `Gagal presensi: Jarak Anda (${jarakMeter}m) melebihi radius lokasi yang diizinkan (${radius}m).`
       });
     }
 
     // Tentukan foto file name
     const fotoFilename = req.file ? req.file.filename : null;
+    const jarakMeter = Math.round(distance);
 
     // Query INSERT disesuaikan dengan skema tabel presensi asli
     await query(
       `INSERT INTO presensi 
-       (user_id, tipe_presensi, waktu_presensi, tanggal, latitude, longitude, jarak_meter, foto_url) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       (user_id, tipe_presensi, waktu_presensi, tanggal, latitude, longitude, akurasi_gps, jarak_meter, foto_url) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         req.user.user_id,
         'pulang',
         new Date(),
         todayDate,
-        parseFloat(req.body.latitude),
-        parseFloat(req.body.longitude),
-        Math.round(distance),
+        lat,
+        lng,
+        akurasiGps,
+        jarakMeter,
         fotoFilename
       ]
     );
@@ -193,15 +211,13 @@ const clockOut = async (req, res) => {
       message: 'Presensi pulang berhasil dicatat.',
       data: {
         tanggal: todayDate,
-        jarak_meter: Math.round(distance)
+        jarak_meter: jarakMeter
       }
     });
   } catch (error) {
-    console.error('ClockOut Error Detail:', error);
+    console.error(error);
     return res.status(500).json({
-      status: 'error',
-      message: error.message,
-      sqlMessage: error.sqlMessage || null
+      message: error.message
     });
   }
 };

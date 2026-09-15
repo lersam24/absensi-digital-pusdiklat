@@ -20,7 +20,7 @@ import {
 import api from "../api/axios";
 
 function getErrorMessage(err, fallback) {
-  return err.response?.data?.message || fallback;
+  return err.response?.data?.message || err.message || fallback;
 }
 
 const NAV_ITEMS = [
