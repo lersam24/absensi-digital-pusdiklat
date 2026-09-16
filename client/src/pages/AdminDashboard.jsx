@@ -24,6 +24,7 @@ import {
   ChevronRight,
   Home,
   Zap,
+  FileSpreadsheet,
 } from "lucide-react";
 import api from "../api/axios";
 
@@ -92,19 +93,25 @@ function Modal({ isOpen, onClose, title, children }) {
 
 function Toast({ message }) {
   if (!message) return null;
+
+  const styles = {
+    success: "bg-emerald-50 border-emerald-200 text-emerald-700",
+    error: "bg-red-50 border-red-200 text-red-600",
+    info: "bg-blue-50 border-blue-200 text-blue-700",
+  };
+  const icons = { success: CheckCircle2, error: AlertCircle, info: Loader2 };
+  const Icon = icons[message.type] || AlertCircle;
+
   return (
     <div
       className={`flex items-start gap-2 rounded-xl px-4 py-3 text-sm border ${
-        message.type === "success"
-          ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-          : "bg-red-50 border-red-200 text-red-600"
+        styles[message.type] || styles.info
       }`}
     >
-      {message.type === "success" ? (
-        <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
-      ) : (
-        <AlertCircle size={18} className="shrink-0 mt-0.5" />
-      )}
+      <Icon
+        size={18}
+        className={`shrink-0 mt-0.5 ${message.type === "info" ? "animate-spin" : ""}`}
+      />
       <span>{message.text}</span>
     </div>
   );
@@ -764,6 +771,13 @@ function MonitoringTab({ searchKeyword = "" }) {
       ? "bg-emerald-600 text-white"
       : "bg-orange-600 text-white";
 
+  const statusBadgeKehadiran = (s) =>
+    s === "tepat_waktu"
+      ? "bg-emerald-500 text-white"
+      : s === "terlambat"
+      ? "bg-red-500 text-white"
+      : null;
+
   const kpis = [
     {
       label: "Total Presensi",
@@ -776,6 +790,12 @@ function MonitoringTab({ searchKeyword = "" }) {
       value: filtered.filter((p) => p.tipe_presensi === "masuk").length,
       icon: CheckCircle2,
       tone: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    },
+    {
+      label: "Terlambat",
+      value: filtered.filter((p) => p.tipe_presensi === "masuk" && p.status_kehadiran === "terlambat").length,
+      icon: AlertCircle,
+      tone: "bg-red-50 text-red-600 border-red-100",
     },
     {
       label: "Clock Out",
@@ -863,7 +883,7 @@ function MonitoringTab({ searchKeyword = "" }) {
       </div>
 
       {/* Bento summary status cards */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
         {kpis.map((k) => {
           const Icon = k.icon;
           return (
@@ -937,6 +957,13 @@ function MonitoringTab({ searchKeyword = "" }) {
                       >
                         {p.tipe_presensi === "masuk" ? "Clock In" : "Clock Out"}
                       </span>
+                      {p.tipe_presensi === "masuk" && p.status_kehadiran && (
+                        <span
+                          className={`absolute top-2.5 left-2.5 z-[2] inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold text-white shadow-sm ${statusBadgeKehadiran(p.status_kehadiran)}`}
+                        >
+                          {p.status_kehadiran === "tepat_waktu" ? "Tepat Waktu" : "Terlambat"}
+                        </span>
+                      )}
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/40 z-[1]">
                         <Eye size={24} className="text-white" />
                       </div>
@@ -995,9 +1022,20 @@ function MonitoringTab({ searchKeyword = "" }) {
                       <p className="text-sm font-semibold text-slate-900 min-w-0 truncate">
                         {p.nama_lengkap}
                       </p>
-                      <span className={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${tipeBadge(p.tipe_presensi)}`}>
-                        {p.tipe_presensi === "masuk" ? "Clock In" : "Clock Out"}
-                      </span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {p.tipe_presensi === "masuk" && p.status_kehadiran && (
+                          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                            p.status_kehadiran === "tepat_waktu"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-red-100 text-red-700"
+                          }`}>
+                            {p.status_kehadiran === "tepat_waktu" ? "Tepat Waktu" : "Terlambat"}
+                          </span>
+                        )}
+                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${tipeBadge(p.tipe_presensi)}`}>
+                          {p.tipe_presensi === "masuk" ? "Clock In" : "Clock Out"}
+                        </span>
+                      </div>
                     </div>
                     <p className="text-2xl font-bold tabular-nums text-slate-900 tracking-tight">
                       {new Date(p.waktu_presensi).toLocaleTimeString("id-ID", {
@@ -1027,6 +1065,7 @@ function MonitoringTab({ searchKeyword = "" }) {
                       <tr>
                         <th className="px-4 py-3">Nama</th>
                         <th className="px-4 py-3">Tipe</th>
+                        <th className="px-4 py-3">Status</th>
                         <th className="px-4 py-3">Waktu</th>
                         <th className="px-4 py-3">Lokasi</th>
                         <th className="px-4 py-3">Jarak</th>
@@ -1040,6 +1079,19 @@ function MonitoringTab({ searchKeyword = "" }) {
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${tipeBadge(p.tipe_presensi)}`}>
                               {p.tipe_presensi}
                             </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            {p.tipe_presensi === "masuk" && p.status_kehadiran ? (
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                                p.status_kehadiran === "tepat_waktu"
+                                  ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200"
+                                  : "bg-red-100 text-red-700 ring-1 ring-red-200"
+                              }`}>
+                                {p.status_kehadiran === "tepat_waktu" ? "Tepat Waktu" : "Terlambat"}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 text-xs">-</span>
+                            )}
                           </td>
                           <td className="px-4 py-3 text-xl font-bold tabular-nums text-slate-900">
                             {new Date(p.waktu_presensi).toLocaleTimeString("id-ID", {
@@ -1123,6 +1175,9 @@ function RekapTab() {
   const [filterTanggalAkhir, setFilterTanggalAkhir] = useState("");
   const [filterUser, setFilterUser] = useState("");
   const [allUsers, setAllUsers] = useState([]);
+  const [exportBulan, setExportBulan] = useState(String(new Date().getMonth() + 1));
+  const [exportTahun, setExportTahun] = useState(String(new Date().getFullYear()));
+  const [exportLoading, setExportLoading] = useState(false);
 
   const fetchJurnals = async () => {
     try {
@@ -1159,8 +1214,50 @@ function RekapTab() {
     fetchJurnals();
   }, [filterTanggalAwal, filterTanggalAkhir, filterUser]);
 
-  const handlePrint = () => {
-    window.print();
+  const handleExport = async (format) => {
+    if (!exportBulan || !exportTahun) {
+      setToast({ type: "error", text: "Pilih bulan dan tahun untuk mengekspor laporan." });
+      return;
+    }
+    setExportLoading(true);
+    setToast({ type: "info", text: `Menyiapkan laporan ${format === "excel" ? "Excel" : "PDF"}...` });
+    try {
+      const params = { bulan: exportBulan, tahun: exportTahun, format };
+      if (filterUser) params.user_id = filterUser;
+
+      const response = await api.get("/admin/export-rekap", {
+        params,
+        responseType: "blob",
+      });
+
+      const disposition = response.headers["content-disposition"] || "";
+      const ext = format === "excel" ? "xlsx" : "pdf";
+      let filename = `rekap-absensi-${exportTahun}-${String(exportBulan).padStart(2, "0")}.${ext}`;
+      const match = disposition.match(/filename="?([^";]+)"?/);
+      if (match) filename = match[1];
+
+      const mime =
+        format === "excel"
+          ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          : "application/pdf";
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: mime }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      setToast({
+        type: "success",
+        text: `Laporan ${format === "excel" ? "Excel" : "PDF"} berhasil diunduh.`,
+      });
+    } catch (err) {
+      setToast({ type: "error", text: getErrorMessage(err, "Gagal mengunduh laporan.") });
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   return (
@@ -1201,9 +1298,48 @@ function RekapTab() {
                 </option>
               ))}
           </select>
-          <button onClick={handlePrint} className={`${btnPrimary} ml-auto`}>
-            <Printer size={16} />
-            Cetak Laporan
+
+          <div className="flex items-center gap-2 bg-orange-50 border border-orange-100 rounded-xl px-3 py-2 w-full sm:w-auto">
+            <span className="text-sm font-semibold text-orange-700 whitespace-nowrap">Export:</span>
+            <select
+              value={exportBulan}
+              onChange={(e) => setExportBulan(e.target.value)}
+              className="bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-slate-700 appearance-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+            >
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                <option key={m} value={m}>
+                  {["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][m - 1]}
+                </option>
+              ))}
+            </select>
+            <select
+              value={exportTahun}
+              onChange={(e) => setExportTahun(e.target.value)}
+              className="bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-slate-700 appearance-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+            >
+              {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            onClick={() => handleExport("excel")}
+            disabled={exportLoading}
+            className={`${btnPrimary} !bg-emerald-600 hover:!bg-emerald-700 !shadow-emerald-600/20`}
+          >
+            {exportLoading ? <Loader2 size={16} className="animate-spin" /> : <FileSpreadsheet size={16} />}
+            Export Excel
+          </button>
+          <button
+            onClick={() => handleExport("pdf")}
+            disabled={exportLoading}
+            className={`${btnPrimary} !bg-indigo-600 hover:!bg-indigo-700 !shadow-indigo-600/20 ml-auto`}
+          >
+            {exportLoading ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
+            Cetak Laporan PDF
           </button>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Loader2,
   AlertCircle,
@@ -19,6 +19,9 @@ function getErrorMessage(err, fallback) {
 
 export default function CameraPresensi() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const tipe = searchParams.get("tipe") === "pulang" ? "pulang" : "masuk";
+  const isPulang = tipe === "pulang";
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -173,7 +176,8 @@ export default function CameraPresensi() {
       formData.append("longitude", String(longitude));
       formData.append("foto", capturedFile);
 
-      const { data } = await api.post("/presensi/clock-in", formData, {
+      const endpoint = isPulang ? "/presensi/clock-out" : "/presensi/clock-in";
+      const { data } = await api.post(endpoint, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -182,13 +186,13 @@ export default function CameraPresensi() {
     } catch (err) {
       setMessage({
         type: "error",
-        text: getErrorMessage(err, "Clock-In gagal. Silakan coba lagi."),
+        text: getErrorMessage(err, isPulang ? "Clock-Out gagal. Silakan coba lagi." : "Clock-In gagal. Silakan coba lagi."),
       });
     } finally {
       setLoading(false);
       setGeoLoading(false);
     }
-  }, [capturedFile, getGeoPosition, navigate]);
+  }, [capturedFile, getGeoPosition, navigate, isPulang]);
 
   useEffect(() => {
     handleProbeGps();
@@ -248,7 +252,9 @@ export default function CameraPresensi() {
         </button>
 
         <div className="text-center min-w-0">
-          <h1 className="text-base font-bold text-slate-900">Clock In</h1>
+          <h1 className="text-base font-bold text-slate-900">
+            {isPulang ? "Clock Out" : "Clock In"}
+          </h1>
           <p className="text-[11px] text-slate-500">
             {captured ? "Preview & Konfirmasi" : "Absensi Kamera Selfie"}
           </p>
@@ -443,7 +449,7 @@ export default function CameraPresensi() {
                   ) : (
                     <>
                       <MapPin size={22} />
-                      Kirim Absen
+                      {isPulang ? "Kirim Clock-Out" : "Kirim Absen"}
                     </>
                   )}
                 </button>

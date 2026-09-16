@@ -7,7 +7,8 @@ const {
   getAllUsers,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  exportRekap
 } = require('./adminController');
 const { authenticateJWT, authorizeRole } = require('../../middlewares/authMiddleware');
 
@@ -16,6 +17,9 @@ router.use(authenticateJWT, authorizeRole('admin', 'pembimbing'));
 
 // Presensi
 router.get('/presensi', getAllPresensi);
+
+// Export Rekap
+router.get('/export-rekap', exportRekap);
 
 // Jurnal
 router.get('/jurnal', getAllJurnal);

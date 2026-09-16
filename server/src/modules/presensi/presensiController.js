@@ -50,7 +50,7 @@ const clockIn = async (req, res) => {
     const officeLat = parseFloat(config.latitude || '-6.3350000');
     const officeLng = parseFloat(config.longitude || '106.8250000');
     const maxRadius = parseFloat(config.radius_meter || 50);
-    const workStartTime = config.jam_masuk_standar || '08:00:00';
+    const workStartTime = config.jam_masuk_standar || '07:30:00';
 
     // Hitung jarak user ke lokasi kantor
     const distance = getDistanceInMeters(lat, lng, officeLat, officeLng);

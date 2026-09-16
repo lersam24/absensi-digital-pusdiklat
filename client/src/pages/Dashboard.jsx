@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LogOut,
@@ -14,13 +14,73 @@ import {
   UserCircle2,
   Home,
   CalendarCheck,
+  CalendarDays,
   ShieldCheck,
   Zap,
+  History,
+  Filter,
+  Printer,
+  LogIn,
+  CalendarOff,
 } from "lucide-react";
 import api from "../api/axios";
 
 function getErrorMessage(err, fallback) {
   return err.response?.data?.message || err.message || fallback;
+}
+
+const JAM_MASUK_STANDAR = "07:30:00";
+
+function formatWaktu(value) {
+  if (!value) return "-";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "-";
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+function isTerlambat(value) {
+  if (!value) return false;
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return false;
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  const ss = String(d.getSeconds()).padStart(2, "0");
+  return `${hh}:${mm}:${ss}` > JAM_MASUK_STANDAR;
+}
+
+// 0 = Minggu, 6 = Sabtu
+function getHari(tanggal) {
+  const parts = String(tanggal || "").split("-").map(Number);
+  if (parts.length !== 3 || parts.some((n) => isNaN(n))) return -1;
+  const [y, m, d] = parts;
+  return new Date(y, m - 1, d).getDay();
+}
+
+function isWeekendDay(tanggal) {
+  const day = getHari(tanggal);
+  return day === 0 || day === 6;
+}
+
+function formatTanggalSingkat(tanggal) {
+  const parts = String(tanggal || "").split("-").map(Number);
+  if (parts.length !== 3 || parts.some((n) => isNaN(n))) return String(tanggal || "").toUpperCase();
+  const [y, m, d] = parts;
+  return new Date(y, m - 1, d)
+    .toLocaleDateString("en-GB", {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })
+    .toUpperCase()
+    .replace(/\./g, "");
+}
+
+function todayLabel() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 const NAV_ITEMS = [
@@ -50,24 +110,27 @@ export default function Dashboard() {
 
   const [user, setUser] = useState(null);
   const [activeView, setActiveView] = useState("home");
-  const [coords, setCoords] = useState({ latitude: null, longitude: null });
-  const [geoError, setGeoError] = useState("");
-  const [loadingGeo, setLoadingGeo] = useState(false);
 
   const [status, setStatus] = useState(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [todayJurnal, setTodayJurnal] = useState(null);
-
-  const [clockLoading, setClockLoading] = useState(null);
-  const [message, setMessage] = useState(null);
 
   const [kegiatan, setKegiatan] = useState("");
   const [judul, setJudul] = useState("");
   const [jurnalLoading, setJurnalLoading] = useState(false);
   const [jurnalMessage, setJurnalMessage] = useState(null);
 
-  const [foto, setFoto] = useState(null);
-  const fileRef = useRef(null);
+  // Riwayat Presensi
+  const [histori, setHistori] = useState([]);
+  const [historiLoading, setHistoriLoading] = useState(true);
+  const [historiError, setHistoriError] = useState("");
+  const [dariTanggal, setDariTanggal] = useState("");
+  const [sampaiTanggal, setSampaiTanggal] = useState("");
+  const [appliedDari, setAppliedDari] = useState("");
+  const [appliedSampai, setAppliedSampai] = useState("");
+
+  const inputTanggal =
+    "w-full px-3.5 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200";
 
   useEffect(() => {
     const raw = localStorage.getItem("user");
@@ -86,11 +149,8 @@ export default function Dashboard() {
     try {
       const { data } = await api.get("/presensi/today");
       setStatus(data.data);
-    } catch (err) {
-      setMessage({
-        type: "error",
-        text: getErrorMessage(err, "Gagal mengambil status presensi."),
-      });
+    } catch {
+      // Status gagal dimuat: biarkan kosong
     } finally {
       setLoadingStatus(false);
     }
@@ -110,77 +170,47 @@ export default function Dashboard() {
     fetchTodayJurnal();
   }, []);
 
-  const getCurrentPosition = () => {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error("Geolokasi tidak didukung oleh browser ini."));
-        return;
+  const fetchHistori = async () => {
+    setHistoriLoading(true);
+    setHistoriError("");
+    try {
+      const { data } = await api.get("/presensi/histori");
+      const rows = data.data || [];
+      setHistori(rows);
+    } catch (err) {
+      setHistoriError(getErrorMessage(err, "Gagal memuat riwayat presensi."));
+    } finally {
+      setHistoriLoading(false);
+    }
+  };
+
+  const handleSaring = () => {
+    let d = dariTanggal.trim();
+    let s = sampaiTanggal.trim();
+    if (d && s && d > s) {
+      const t = d;
+      d = s;
+      s = t;
+    }
+    setAppliedDari(d);
+    setAppliedSampai(s);
+  };
+
+  useEffect(() => {
+    fetchHistori();
+  }, []);
+
+  useEffect(() => {
+    if (!historiLoading && histori.length && !appliedDari) {
+      const dates = histori.map((r) => r.tanggal).filter(Boolean).sort();
+      if (dates.length) {
+        setDariTanggal(dates[0]);
+        setSampaiTanggal(todayLabel());
+        setAppliedDari(dates[0]);
+        setAppliedSampai(todayLabel());
       }
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 10000,
-      });
-    });
-  };
-
-  const acquireCoords = async () => {
-    setLoadingGeo(true);
-    setGeoError("");
-    try {
-      const pos = await getCurrentPosition();
-      const { latitude, longitude } = pos.coords;
-      setCoords({ latitude, longitude });
-      return { latitude, longitude };
-    } catch (err) {
-      const text =
-        err.code === 1
-          ? "Izin lokasi ditolak. Izinkan akses lokasi untuk presensi."
-          : "Gagal mendapatkan lokasi. Pastikan GPS aktif.";
-      setGeoError(text);
-      throw new Error(text);
-    } finally {
-      setLoadingGeo(false);
     }
-  };
-
-  const handleClockOut = async () => {
-    setMessage(null);
-    let pos;
-    try {
-      pos = await acquireCoords();
-    } catch {
-      return;
-    }
-
-    if (!foto) {
-      setMessage({
-        type: "error",
-        text: "Foto bukti presensi wajib dilampirkan.",
-      });
-      return;
-    }
-
-    setClockLoading("out");
-    try {
-      const formData = new FormData();
-      formData.append("latitude", String(pos.latitude));
-      formData.append("longitude", String(pos.longitude));
-      formData.append("foto", foto);
-
-      const { data } = await api.post("/presensi/clock-out", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      setMessage({ type: "success", text: data.message });
-      await fetchTodayStatus();
-    } catch (err) {
-      setMessage({
-        type: "error",
-        text: getErrorMessage(err, "Clock-Out gagal."),
-      });
-    } finally {
-      setClockLoading(null);
-    }
-  };
+  }, [histori, historiLoading, appliedDari]);
 
   const handleSubmitJurnal = async (e) => {
     e.preventDefault();
@@ -242,6 +272,10 @@ export default function Dashboard() {
   const jurnalDone = !!todayJurnal;
   const clockedIn = !!status?.clock_in;
   const clockedOut = !!status?.clock_out;
+
+  // 0 = Minggu, 6 = Sabtu
+  const todayDay = new Date().getDay();
+  const isWeekendToday = todayDay === 0 || todayDay === 6;
 
   let statusMeta = {
     label: "Belum Clock-In",
@@ -310,8 +344,57 @@ export default function Dashboard() {
     </header>
   );
 
-  const renderHero = () => (
-    <section className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-6 rounded-3xl shadow-lg shadow-orange-500/10 relative overflow-hidden">
+  const renderHero = () => {
+    if (isWeekendToday) {
+      return (
+        <section className="bg-gradient-to-r from-slate-200 via-slate-100 to-blue-200 p-6 rounded-3xl shadow-lg shadow-slate-200/60 relative overflow-hidden border border-slate-200">
+          <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-white/40 pointer-events-none" />
+          <div className="absolute top-1/2 right-6 w-20 h-20 rounded-full border border-white/50 pointer-events-none" />
+
+          <div className="relative">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-slate-500">Selamat Datang,</p>
+                <h2 className="text-2xl font-bold text-slate-800 leading-tight mt-0.5 truncate">
+                  {user.nama_lengkap.split(" ")[0]}!
+                </h2>
+                <p className="text-[13px] text-slate-500 mt-1">
+                  {new Date().toLocaleDateString("id-ID", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-white/50 border border-white/70 text-slate-600 flex items-center justify-center text-sm font-bold shrink-0">
+                {initialsOf(user.nama_lengkap)}
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-white/60 border border-blue-100 flex items-center justify-center shrink-0 text-slate-500">
+                <CalendarDays size={22} />
+              </div>
+              <div className="min-w-0">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-slate-200 border border-slate-300 text-[11px] font-semibold text-slate-600">
+                  Status Hari Ini
+                </span>
+                <h3 className="text-xl font-bold text-slate-800 mt-1 leading-tight">
+                  Hari Libur Akhir Pekan (Sabtu/Minggu)
+                </h3>
+              </div>
+            </div>
+            <p className="text-sm text-slate-600 mt-2 font-medium">
+              Bebas Tugas Absensi — Tidak ada kewajiban Clock-In / Clock-Out hari ini.
+            </p>
+          </div>
+        </section>
+      );
+    }
+
+    return (
+      <section className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-6 rounded-3xl shadow-lg shadow-orange-500/10 relative overflow-hidden">
       <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-white/10 pointer-events-none" />
       <div className="absolute top-1/2 right-6 w-20 h-20 rounded-full border border-white/20 pointer-events-none" />
 
@@ -380,7 +463,8 @@ export default function Dashboard() {
         </div>
       </div>
     </section>
-  );
+    );
+  };
 
   const renderQuickActions = () => (
     <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-sm p-5 space-y-4 self-start">
@@ -396,15 +480,15 @@ export default function Dashboard() {
 
       <button
         onClick={() => navigate("/presensi/kamera")}
-        disabled={!canClockIn}
+        disabled={!canClockIn || isWeekendToday}
         className="relative overflow-hidden w-full flex flex-col items-center justify-center gap-2 min-h-[88px] rounded-2xl bg-orange-600 hover:bg-orange-700 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none text-white font-semibold shadow-sm shadow-orange-600/25 hover:shadow-md hover:shadow-orange-600/30 transition-all duration-200 active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed"
       >
         <Camera size={26} />
         Clock In
       </button>
       <button
-        onClick={() => setActiveView("presensi")}
-        disabled={!canClockOut}
+        onClick={() => navigate("/presensi/kamera?tipe=pulang")}
+        disabled={!canClockOut || isWeekendToday}
         className="relative overflow-hidden w-full flex flex-col items-center justify-center gap-2 min-h-[88px] rounded-2xl bg-orange-600 hover:bg-orange-700 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none text-white font-semibold shadow-sm shadow-orange-600/25 hover:shadow-md hover:shadow-orange-600/30 transition-all duration-200 active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed"
       >
         <LogOut size={26} />
@@ -415,25 +499,19 @@ export default function Dashboard() {
         <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 flex items-center justify-center shrink-0">
           <MapPin size={16} />
         </div>
-        {coords.latitude && coords.longitude ? (
-          <p className="text-xs font-medium text-slate-700 tabular-nums truncate">
-            {coords.latitude.toFixed(6)}, {coords.longitude.toFixed(6)}
-          </p>
-        ) : loadingGeo ? (
-          <p className="text-xs text-slate-500 inline-flex items-center gap-1.5">
-            <Loader2 size={13} className="animate-spin text-orange-500" />
-            Mengambil lokasi...
-          </p>
-        ) : (
-          <p className="text-xs text-slate-500">Lokasi diambil saat presensi.</p>
-        )}
-        {geoError && (
-          <p className="text-[11px] text-red-500 ml-auto shrink-0 inline-flex items-center gap-1">
-            <AlertCircle size={12} />
-            {geoError}
-          </p>
-        )}
+        <p className="text-xs text-slate-500">Lokasi GPS diambil otomatis di halaman kamera.</p>
       </div>
+
+      {isWeekendToday && (
+        <div className="pt-1 flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center shrink-0">
+            <CalendarDays size={16} />
+          </div>
+          <p className="text-xs font-medium text-slate-500">
+            Hari libur akhir pekan — tombol Clock In / Clock Out dinonaktifkan.
+          </p>
+        </div>
+      )}
     </div>
   );
 
@@ -523,109 +601,281 @@ export default function Dashboard() {
     </section>
   );
 
-  const renderPresensiView = () => (
-    <div className="space-y-5">
-      <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-xl bg-orange-600 text-white flex items-center justify-center shadow-sm shadow-orange-600/25">
-          <CalendarCheck size={22} />
+  const renderPresensiView = () => {
+    const renderLogCard = (log, idx) => {
+      const masuk = log.tipe_presensi === "masuk";
+      return (
+        <article
+          key={`log-${log.id || log.tanggal || idx}`}
+          className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center justify-between gap-3 transition-all duration-200 active:scale-[0.99]"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div
+              className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${
+                masuk ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
+              }`}
+            >
+              {masuk ? <LogIn size={20} /> : <LogOut size={20} />}
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">
+                {formatTanggalSingkat(log.tanggal)}
+              </p>
+              <h4 className="text-[15px] font-bold text-slate-900 truncate">
+                {masuk ? "Absen Masuk" : "Absen Pulang"}
+              </h4>
+            </div>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-lg font-bold text-slate-800 tracking-tight tabular-nums leading-none">
+              {formatWaktu(log.waktu_presensi)}
+            </p>
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              WIB
+            </p>
+          </div>
+        </article>
+      );
+    };
+
+    const renderWeekendCard = (tg) => (
+      <article
+          key={`weekend-${tg}`}
+          className="bg-slate-100 border border-slate-200 rounded-2xl p-4 flex items-center justify-between gap-3 transition-all duration-200 active:scale-[0.99]"
+        >
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-11 h-11 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center shrink-0">
+            <CalendarOff size={20} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">
+              {formatTanggalSingkat(tg)}
+            </p>
+            <h4 className="text-[15px] font-bold text-slate-500 truncate">
+              Weekend / Libur Akhir Pekan
+            </h4>
+          </div>
         </div>
-        <div>
-          <h3 className="text-xl font-bold text-slate-900">Presensi</h3>
-          <p className="text-sm text-slate-500">Catat kehadiran Anda hari ini.</p>
+        <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
+          Libur
+        </span>
+      </article>
+    );
+
+    const records = [...histori].sort((a, b) => {
+      const key = (r) => `${r.tanggal}_${r.waktu_presensi}`;
+      return key(a).localeCompare(key(b));
+    });
+
+    const byDate = {};
+    for (const r of records) {
+      if (!byDate[r.tanggal]) byDate[r.tanggal] = [];
+      byDate[r.tanggal].push(r);
+    }
+
+    const list = [];
+    const dtFrom = appliedDari;
+    const dtTo = appliedSampai;
+
+    if (dtFrom && dtTo) {
+      const [fy, fm, fd] = dtFrom.split("-").map(Number);
+      const [ty, tm, td] = dtTo.split("-").map(Number);
+      if (!isNaN(fy) && !isNaN(fm) && !isNaN(fd) && !isNaN(ty) && !isNaN(tm) && !isNaN(td)) {
+        const cur = new Date(fy, fm - 1, fd);
+        const end = new Date(ty, tm - 1, td);
+        while (cur <= end) {
+          const tg = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, "0")}-${String(cur.getDate()).padStart(2, "0")}`;
+          if (isWeekendDay(tg)) list.push({ type: "weekend", tanggal: tg });
+          for (const r of byDate[tg] || []) {
+            list.push({ type: "log", log: r });
+          }
+          cur.setDate(cur.getDate() + 1);
+        }
+      }
+    } else {
+      for (const r of records) {
+        list.push({ type: "log", log: r });
+      }
+    }
+
+    const totalCatatan = list.filter((e) => e.type === "log").length;
+    let totalTerlambat = 0;
+    for (const e of list) {
+      if (
+        e.type === "log" &&
+        e.log.tipe_presensi === "masuk" &&
+        isTerlambat(e.log.waktu_presensi)
+      ) {
+        totalTerlambat += 1;
+      }
+    }
+
+    return (
+      <div className="-mx-4 -mt-5 pb-32">
+        {/* Banner seamless dengan top bar menyatu */}
+        <div className="relative">
+          <div className="bg-gradient-to-br from-orange-600 via-orange-500 to-amber-400 rounded-b-[2.5rem] shadow-lg shadow-orange-500/20 pt-4 pb-16">
+            <div className="px-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-white/20 border border-white/30 text-white shrink-0">
+                  <Zap size={18} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[13px] font-bold text-white leading-tight truncate">
+                    Pusdiklat Digital
+                  </p>
+                  <p className="text-[11px] text-orange-100 truncate">Dashboard Magang</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="w-9 h-9 rounded-full bg-white/20 border border-white/30 text-white flex items-center justify-center text-xs font-bold">
+                  {initialsOf(user.nama_lengkap)}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 rounded-xl bg-white/15 border border-white/30 text-white hover:bg-white/25 transition-all duration-200 cursor-pointer"
+                  title="Logout"
+                >
+                  <LogOut size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative -mt-9 px-4">
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/60 p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 border border-orange-100 text-orange-600 text-[10px] font-bold tracking-[0.16em] uppercase">
+                    <History size={12} />
+                    Log Digital
+                  </span>
+                  <h3 className="mt-2.5 text-xl font-bold text-slate-900 tracking-tight leading-tight">
+                    RIWAYAT ABSENSI
+                  </h3>
+                  <p className="mt-1 text-xs font-normal text-slate-500">
+                    Seluruh catatan kehadiran Anda selama PKL
+                  </p>
+                </div>
+                <div className="w-11 h-11 rounded-2xl bg-orange-50 border border-orange-100 text-orange-600 flex items-center justify-center shrink-0 shadow-sm shadow-orange-100">
+                  <CalendarDays size={20} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 mt-4 space-y-4">
+          {/* Filter rentang tanggal */}
+          <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block min-w-0">
+                <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                  Dari Tanggal
+                </span>
+                <input
+                  type="date"
+                  value={dariTanggal}
+                  onChange={(e) => setDariTanggal(e.target.value)}
+                  className={inputTanggal}
+                />
+              </label>
+              <label className="block min-w-0">
+                <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                  Sampai Tanggal
+                </span>
+                <input
+                  type="date"
+                  value={sampaiTanggal}
+                  onChange={(e) => setSampaiTanggal(e.target.value)}
+                  className={inputTanggal}
+                />
+              </label>
+            </div>
+            <button
+              onClick={handleSaring}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold tracking-wide py-3 transition-all duration-200 active:scale-[0.98] cursor-pointer"
+            >
+              <Filter size={16} />
+              Saring Data
+            </button>
+          </section>
+
+          {/* Tombol cetak + ringkasan */}
+          <div className="flex items-center justify-between gap-3">
+            <button
+              onClick={() => window.print()}
+              className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100 rounded-xl px-4 py-2.5 text-xs font-semibold text-white transition-all duration-200 active:scale-[0.98] cursor-pointer"
+            >
+              <Printer size={14} />
+              Cetak Laporan PDF
+            </button>
+            <div className="flex items-center gap-5 shrink-0">
+              <div className="text-right">
+                <p className="text-lg font-bold text-slate-800 tabular-nums leading-none">
+                  {totalCatatan}
+                </p>
+                <p className="mt-1 text-[10px] text-slate-400 font-medium tracking-wider uppercase">
+                  Catatan
+                </p>
+              </div>
+              <div className="text-right">
+                <p
+                  className={`text-lg font-bold tabular-nums leading-none ${
+                    totalTerlambat ? "text-slate-800" : "text-slate-300"
+                  }`}
+                >
+                  {totalTerlambat}
+                </p>
+                <p className="mt-1 text-[10px] text-slate-400 font-medium tracking-wider uppercase">
+                  Terlambat
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Daftar riwayat */}
+          {historiLoading ? (
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center justify-center py-14 text-slate-500">
+              <Loader2 size={24} className="animate-spin mr-2 text-orange-500" />
+              Memuat riwayat...
+            </div>
+          ) : historiError ? (
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center py-14 gap-3 text-center px-6">
+              <AlertCircle size={32} className="text-red-400" />
+              <p className="text-slate-600 font-medium">{historiError}</p>
+              <button
+                onClick={fetchHistori}
+                className="mt-1 text-xs font-semibold text-orange-600 hover:text-orange-700 underline cursor-pointer"
+              >
+                Coba lagi
+              </button>
+            </div>
+          ) : list.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center py-14 gap-3 text-center px-6">
+              <div className="w-16 h-16 rounded-2xl bg-orange-50 border border-orange-100 text-orange-400 flex items-center justify-center">
+                <CalendarDays size={32} />
+              </div>
+              <p className="text-slate-600 font-medium">
+                Belum ada catatan pada rentang tanggal ini.
+              </p>
+              <p className="text-xs text-slate-400">
+                Sesuaikan rentang tanggal atau lakukan Clock-In dari halaman Home.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3 pb-4">
+              {list.map((item, idx) =>
+                item.type === "weekend"
+                  ? renderWeekendCard(item.tanggal)
+                  : renderLogCard(item.log, idx)
+              )}
+            </div>
+          )}
         </div>
       </div>
-
-      {message && (
-        <div
-          className={`flex items-start gap-2 rounded-2xl px-4 py-3 text-sm border ${
-            message.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-              : "bg-red-50 border-red-200 text-red-600"
-          }`}
-        >
-          {message.type === "success" ? (
-            <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
-          ) : (
-            <AlertCircle size={18} className="shrink-0 mt-0.5" />
-          )}
-          <span>{message.text}</span>
-        </div>
-      )}
-
-      <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-5">
-        <div className="grid grid-cols-2 gap-3">
-          <div
-            className={`rounded-xl border p-4 text-center ${
-              clockedIn ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-slate-200"
-            }`}
-          >
-            <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">Clock In</p>
-            <p className={`text-2xl font-bold tabular-nums mt-1 ${clockedIn ? "text-slate-900" : "text-slate-300"}`}>
-              {clockInTime || "\u2014"}
-            </p>
-          </div>
-          <div
-            className={`rounded-xl border p-4 text-center ${
-              clockedOut ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-slate-200"
-            }`}
-          >
-            <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">Clock Out</p>
-            <p className={`text-2xl font-bold tabular-nums mt-1 ${clockedOut ? "text-slate-900" : "text-slate-300"}`}>
-              {clockOutTime || "\u2014"}
-            </p>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
-            Foto Bukti Presensi <span className="text-slate-400">(untuk Clock-Out)</span>
-          </label>
-          <div className="flex items-center gap-3">
-            <label className="inline-flex items-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-600 font-medium text-sm px-4 min-h-[46px] rounded-xl cursor-pointer transition-all duration-200 border border-orange-200">
-              <Camera size={18} />
-              {foto ? "Ganti Foto" : "Pilih Foto"}
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => setFoto(e.target.files[0] || null)}
-              />
-            </label>
-            {foto && <span className="text-sm text-slate-500 truncate">{foto.name}</span>}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3">
-          <button
-            onClick={() => navigate("/presensi/kamera")}
-            disabled={!canClockIn}
-            className={primaryBtn}
-          >
-            <Camera size={22} />
-            Clock In
-          </button>
-          <button
-            onClick={handleClockOut}
-            disabled={!canClockOut || clockLoading !== null}
-            className={primaryBtn}
-          >
-            {clockLoading === "out" ? (
-              <>
-                <Loader2 size={22} className="animate-spin" />
-                Memproses...
-              </>
-            ) : (
-              <>
-                <LogOut size={22} />
-                Clock Out
-              </>
-            )}
-          </button>
-        </div>
-      </section>
-    </div>
-  );
+    );
+  };
 
   const renderJurnalView = () => (
     <div className="space-y-5">
@@ -775,7 +1025,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-32">
-      {renderHeader()}
+      {activeView !== "presensi" && renderHeader()}
 
       <main className="max-w-2xl mx-auto px-4 py-5 space-y-5">
         {activeView === "home" && (
