@@ -220,15 +220,28 @@ export default function CameraPresensi() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col">
+    <div className="relative min-h-screen text-slate-900 flex flex-col overflow-x-hidden">
+      {/* Liquid backdrop */}
+      <div
+        className="fixed inset-0 z-0 bg-gradient-to-br from-orange-400/20 via-slate-50 to-emerald-400/20"
+        aria-hidden="true"
+      />
+      {/* Ambient glow circles */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute -top-20 -right-16 w-80 h-80 rounded-full bg-gradient-to-br from-orange-400/25 via-slate-50 to-transparent blur-3xl" />
+        <div className="absolute bottom-16 -left-20 w-96 h-96 rounded-full bg-gradient-to-br from-emerald-400/20 via-transparent to-slate-50 blur-3xl" />
+        <div className="absolute top-1/2 left-1/3 w-72 h-72 rounded-full bg-gradient-to-br from-orange-300/20 via-slate-50 to-emerald-300/20 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 flex flex-col min-h-screen">
       {/* Floating toast */}
       {message && (
         <div className="fixed top-5 inset-x-4 z-50 mx-auto max-w-md">
           <div
-            className={`flex items-start gap-2 rounded-2xl px-4 py-3 text-sm border shadow-lg ${
+            className={`flex items-start gap-2 rounded-2xl px-4 py-3 text-sm border backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] ${
               message.type === "success"
-                ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                : "bg-red-50 border-red-200 text-red-600"
+                ? "bg-emerald-50/80 border-emerald-200/60 text-emerald-700"
+                : "bg-red-50/80 border-red-200/60 text-red-600"
             }`}
           >
             {message.type === "success" ? (
@@ -242,10 +255,10 @@ export default function CameraPresensi() {
       )}
 
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between gap-3 shrink-0">
+      <header className="bg-white/70 backdrop-blur-2xl border-b border-white/50 shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] px-4 py-3 flex items-center justify-between gap-3 shrink-0">
         <button
           onClick={handleBack}
-          className="inline-flex items-center gap-2 px-3 min-h-[42px] rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm transition-all duration-200 cursor-pointer"
+          className="inline-flex items-center gap-2 px-3 min-h-[42px] rounded-2xl bg-white/60 backdrop-blur-xl border border-white/60 text-slate-600 hover:bg-white/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] transition-transform duration-300 ease-out active:scale-95 cursor-pointer"
         >
           <ArrowLeft size={18} />
           <span className="hidden sm:inline text-sm font-medium">Kembali</span>
@@ -255,7 +268,7 @@ export default function CameraPresensi() {
           <h1 className="text-base font-bold text-slate-900">
             {isPulang ? "Clock Out" : "Clock In"}
           </h1>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] font-medium text-slate-500/70">
             {captured ? "Preview & Konfirmasi" : "Absensi Kamera Selfie"}
           </p>
         </div>
@@ -263,7 +276,7 @@ export default function CameraPresensi() {
         {/* GPS status */}
         <button
           onClick={handleProbeGps}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-white border border-slate-200 px-3 py-2 text-[11px] font-semibold text-slate-600 shadow-sm hover:bg-slate-50 transition-all duration-200 cursor-pointer"
+          className="inline-flex items-center gap-1.5 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/60 px-3 py-2 text-[11px] font-bold text-slate-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] transition-transform duration-300 ease-out active:scale-95 cursor-pointer"
           title="Cek GPS"
         >
           {geoStatus === "locating" ? (
@@ -290,7 +303,7 @@ export default function CameraPresensi() {
                 <p className="text-red-400 text-sm leading-relaxed">{cameraError}</p>
                 <button
                   onClick={startCamera}
-                  className="flex items-center gap-2 min-h-[44px] px-5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold shadow-lg shadow-orange-600/30 transition-all duration-200 active:scale-[0.98] cursor-pointer"
+                  className="flex items-center gap-2 min-h-[44px] px-5 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold shadow-lg shadow-orange-500/25 transition-all duration-300 ease-out active:scale-95 hover:opacity-90 cursor-pointer"
                 >
                   <RefreshCw size={16} />
                   Coba Lagi
@@ -376,7 +389,7 @@ export default function CameraPresensi() {
         </div>
 
         {/* Controls */}
-        <div className="mt-6 w-full max-w-sm bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <div className="mt-6 w-full max-w-sm glass-card p-5">
           {!captured ? (
             <>
               {geoError && (
@@ -392,19 +405,19 @@ export default function CameraPresensi() {
                   onClick={handleCapture}
                   disabled={!cameraReady}
                   aria-label="Ambil Foto"
-                  className="relative w-20 h-20 rounded-full bg-orange-600 ring-8 ring-orange-100 shadow-lg shadow-orange-600/30 flex items-center justify-center transition-all duration-200 active:scale-90 disabled:bg-slate-300 disabled:ring-slate-100 disabled:shadow-none disabled:cursor-not-allowed cursor-pointer"
+                  className="relative w-20 h-20 rounded-full bg-gradient-to-b from-orange-500 to-orange-600 ring-8 ring-orange-500/15 shadow-lg shadow-orange-500/35 flex items-center justify-center transition-transform duration-300 ease-out active:scale-90 disabled:from-slate-200 disabled:to-slate-200 disabled:border disabled:border-slate-300/60 disabled:ring-slate-200 disabled:shadow-none disabled:cursor-not-allowed cursor-pointer"
                 >
-                  <span className="w-12 h-12 rounded-full border-4 border-white block" />
+                  <span className="w-12 h-12 rounded-full border-4 border-white block shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)]" />
                 </button>
-                <p className="text-xs font-medium text-slate-500">
+                <p className="text-xs font-medium text-slate-500/80">
                   Ketuk tombol untuk mengambil foto presensi
                 </p>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-slate-100">
+              <div className="mt-4 pt-4 border-t border-white/50">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full inline-flex items-center justify-center gap-2 min-h-[46px] bg-white hover:bg-orange-50 border border-slate-200 text-slate-700 font-medium text-sm rounded-xl transition-all duration-200 active:scale-[0.98] cursor-pointer"
+                  className="w-full inline-flex items-center justify-center gap-2 min-h-[46px] bg-white/60 hover:bg-orange-50/70 backdrop-blur-xl border border-white/60 text-slate-700 font-medium text-sm rounded-2xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] transition-all duration-300 ease-out active:scale-95 cursor-pointer"
                 >
                   <ImagePlus size={17} />
                   Atau unggah dari galeri
@@ -413,7 +426,7 @@ export default function CameraPresensi() {
             </>
           ) : (
             <>
-              <div className="flex items-center justify-center gap-2 text-emerald-600 mb-3 text-sm font-semibold">
+              <div className="flex items-center justify-center gap-2 text-emerald-600 mb-3 text-sm font-bold">
                 <CheckCircle2 size={18} />
                 Foto berhasil diambil
               </div>
@@ -429,7 +442,7 @@ export default function CameraPresensi() {
                   {geoError}
                 </p>
               ) : (
-                <p className="text-center text-xs text-slate-500 mb-2">
+                <p className="text-center text-xs font-medium text-slate-500 mb-2">
                   <MapPin size={13} className="inline-block mr-1 text-orange-500" />
                   GPS siap — lokasi akan dilampirkan
                 </p>
@@ -439,7 +452,7 @@ export default function CameraPresensi() {
                 <button
                   onClick={handleSubmit}
                   disabled={loading || geoLoading}
-                  className="relative overflow-hidden w-full flex items-center justify-center gap-2 min-h-[56px] bg-orange-600 hover:bg-orange-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold rounded-2xl shadow-sm shadow-orange-600/25 hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed"
+                  className="relative overflow-hidden w-full flex items-center justify-center gap-2 min-h-[56px] bg-gradient-to-r from-orange-500 to-orange-600 disabled:from-slate-200 disabled:to-slate-200 disabled:border disabled:border-slate-300/60 disabled:text-slate-400 disabled:shadow-none text-white font-semibold rounded-2xl py-3.5 shadow-lg shadow-orange-500/25 transition-all duration-300 ease-out active:scale-95 hover:opacity-90 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <>
@@ -456,7 +469,7 @@ export default function CameraPresensi() {
                 <button
                   onClick={handleRetake}
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 min-h-[52px] bg-white hover:bg-orange-50 border border-slate-200 text-slate-700 font-medium rounded-2xl transition-all duration-200 active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 min-h-[52px] bg-white/60 hover:bg-orange-50/70 backdrop-blur-xl border border-white/60 text-slate-700 font-semibold rounded-2xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] transition-all duration-300 ease-out active:scale-95 cursor-pointer disabled:opacity-50"
                 >
                   <RefreshCw size={20} />
                   Foto Ulang
@@ -477,6 +490,7 @@ export default function CameraPresensi() {
         className="hidden"
         onChange={handleFilePick}
       />
+      </div>
     </div>
   );
 }

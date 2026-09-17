@@ -91,10 +91,22 @@ const NAV_ITEMS = [
 ];
 
 const inputBase =
-  "w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200";
+  "w-full px-4 py-3 border border-white/60 rounded-2xl bg-white/60 backdrop-blur-xl text-slate-900 placeholder-slate-500/70 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] transition-all duration-200";
 
 const primaryBtn =
-  "relative overflow-hidden w-full flex items-center justify-center gap-2 min-h-[56px] bg-orange-600 hover:bg-orange-700 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none text-white font-semibold rounded-2xl shadow-sm shadow-orange-600/20 hover:shadow-md hover:shadow-orange-600/25 transition-all duration-200 active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed";
+  "relative overflow-hidden w-full flex items-center justify-center gap-2 min-h-[54px] bg-gradient-to-r from-orange-500 to-orange-600 disabled:from-slate-200 disabled:to-slate-200 disabled:border disabled:border-slate-300/60 disabled:text-slate-400 disabled:shadow-none text-white font-semibold rounded-2xl py-3.5 shadow-lg shadow-orange-500/25 transition-all duration-300 ease-out active:scale-95 hover:opacity-90 cursor-pointer disabled:cursor-not-allowed";
+
+const actionBtn =
+  "relative overflow-hidden w-full flex flex-col items-center justify-center gap-2 min-h-[84px] rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 disabled:from-slate-200 disabled:to-slate-200 disabled:border disabled:border-slate-300/60 disabled:text-slate-400 disabled:shadow-none text-white font-semibold shadow-lg shadow-orange-500/25 transition-all duration-300 ease-out active:scale-95 hover:opacity-90 cursor-pointer disabled:cursor-not-allowed";
+
+const glassCard = "glass-card p-6 mb-5";
+const glassCardSm = "glass-card-sm";
+
+const badgeOrange =
+  "inline-flex items-center gap-1.5 bg-orange-100/80 backdrop-blur-md text-orange-700 font-bold px-3 py-1 rounded-full text-xs";
+
+const badgeEmerald =
+  "inline-flex items-center gap-1.5 bg-emerald-100/80 backdrop-blur-md text-emerald-700 font-bold px-3 py-1 rounded-full text-xs";
 
 function initialsOf(name) {
   return (name || "U")
@@ -130,7 +142,7 @@ export default function Dashboard() {
   const [appliedSampai, setAppliedSampai] = useState("");
 
   const inputTanggal =
-    "w-full px-3.5 py-3 border border-slate-200 rounded-xl bg-slate-50 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200";
+    "w-full px-3.5 py-3 border border-white/60 rounded-2xl bg-white/60 backdrop-blur-xl text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] transition-all duration-200";
 
   useEffect(() => {
     const raw = localStorage.getItem("user");
@@ -304,10 +316,10 @@ export default function Dashboard() {
   const StatusIcon = statusMeta.icon;
 
   const renderHeader = () => (
-    <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-200">
+    <header className="sticky top-0 z-20 bg-white/60 backdrop-blur-2xl border-b border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.04)]">
       <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-orange-600 text-white shadow-sm shadow-orange-600/25 shrink-0">
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25 shrink-0">
             <Zap size={20} />
           </div>
           <div className="min-w-0">
@@ -315,26 +327,26 @@ export default function Dashboard() {
               <h1 className="text-[15px] font-bold text-slate-900 leading-tight truncate">
                 Pusdiklat Digital
               </h1>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-semibold shrink-0">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-100/80 backdrop-blur-md text-orange-700 text-[10px] font-bold shrink-0">
                 <ShieldCheck size={10} />
                 Peserta
               </span>
             </div>
-            <p className="text-xs text-slate-500 truncate">Dashboard Magang</p>
+            <p className="text-xs text-slate-600 font-medium truncate">Dashboard Magang</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           <div className="hidden sm:flex flex-col items-end leading-tight">
-            <p className="text-xs font-semibold text-slate-800">{user.nama_lengkap}</p>
-            <p className="text-[11px] text-slate-500">{user.email}</p>
+            <p className="text-xs font-bold text-slate-900">{user.nama_lengkap}</p>
+            <p className="text-[11px] text-slate-600 font-medium">{user.email}</p>
           </div>
-          <div className="w-10 h-10 rounded-full bg-orange-50 border border-orange-200 text-orange-600 flex items-center justify-center text-xs font-bold">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/90 to-white/50 backdrop-blur-xl border border-white/70 text-orange-600 flex items-center justify-center text-xs font-bold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)]">
             {initialsOf(user.nama_lengkap)}
           </div>
           <button
             onClick={handleLogout}
-            className="p-2.5 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 border border-slate-200 bg-white transition-all duration-200 cursor-pointer"
+            className="p-2.5 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 border border-white/60 bg-white/50 backdrop-blur-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] transition-all duration-200 active:scale-95 cursor-pointer"
             title="Logout"
           >
             <LogOut size={18} />
@@ -347,65 +359,60 @@ export default function Dashboard() {
   const renderHero = () => {
     if (isWeekendToday) {
       return (
-        <section className="bg-gradient-to-r from-slate-200 via-slate-100 to-blue-200 p-6 rounded-3xl shadow-lg shadow-slate-200/60 relative overflow-hidden border border-slate-200">
-          <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-white/40 pointer-events-none" />
-          <div className="absolute top-1/2 right-6 w-20 h-20 rounded-full border border-white/50 pointer-events-none" />
-
-          <div className="relative">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-slate-500">Selamat Datang,</p>
-                <h2 className="text-2xl font-bold text-slate-800 leading-tight mt-0.5 truncate">
-                  {user.nama_lengkap.split(" ")[0]}!
-                </h2>
-                <p className="text-[13px] text-slate-500 mt-1">
-                  {new Date().toLocaleDateString("id-ID", {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-white/50 border border-white/70 text-slate-600 flex items-center justify-center text-sm font-bold shrink-0">
-                {initialsOf(user.nama_lengkap)}
-              </div>
+        <section className={glassCard}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm text-slate-600 font-medium">Selamat Datang,</p>
+              <h2 className="text-2xl font-bold text-slate-900 leading-tight mt-0.5 truncate">
+                {user.nama_lengkap.split(" ")[0]}!
+              </h2>
+              <p className="text-[13px] text-slate-600 font-medium mt-1">
+                {new Date().toLocaleDateString("id-ID", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </p>
             </div>
-
-            <div className="mt-6 flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-white/60 border border-blue-100 flex items-center justify-center shrink-0 text-slate-500">
-                <CalendarDays size={22} />
-              </div>
-              <div className="min-w-0">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-slate-200 border border-slate-300 text-[11px] font-semibold text-slate-600">
-                  Status Hari Ini
-                </span>
-                <h3 className="text-xl font-bold text-slate-800 mt-1 leading-tight">
-                  Hari Libur Akhir Pekan (Sabtu/Minggu)
-                </h3>
-              </div>
+            <div className="w-12 h-12 rounded-full bg-white/70 backdrop-blur-xl border border-white/60 text-slate-600 flex items-center justify-center text-sm font-bold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shrink-0">
+              {initialsOf(user.nama_lengkap)}
             </div>
-            <p className="text-sm text-slate-600 mt-2 font-medium">
-              Bebas Tugas Absensi — Tidak ada kewajiban Clock-In / Clock-Out hari ini.
-            </p>
           </div>
+
+          <div className="mt-6 flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-white/70 backdrop-blur-xl border border-white/60 text-slate-500 flex items-center justify-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shrink-0">
+              <CalendarDays size={22} />
+            </div>
+            <div className="min-w-0">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/60 backdrop-blur-md border border-white/60 text-slate-600 text-[11px] font-bold">
+                Status Hari Ini
+              </span>
+              <h3 className="text-xl font-bold text-slate-900 mt-1 leading-tight">
+                Hari Libur Akhir Pekan (Sabtu/Minggu)
+              </h3>
+            </div>
+          </div>
+          <p className="text-sm text-slate-600 font-medium mt-2">
+            Bebas Tugas Absensi — Tidak ada kewajiban Clock-In / Clock-Out hari ini.
+          </p>
         </section>
       );
     }
 
     return (
-      <section className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-6 rounded-3xl shadow-lg shadow-orange-500/10 relative overflow-hidden">
-      <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-white/10 pointer-events-none" />
-      <div className="absolute top-1/2 right-6 w-20 h-20 rounded-full border border-white/20 pointer-events-none" />
-
-      <div className="relative">
+      <section
+        className={`${glassCard} ${
+          clockedOut && !loadingStatus ? "pulse-glow-emerald" : "pulse-glow-orange"
+        }`}
+      >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-sm text-orange-100">Selamat Datang,</p>
-            <h2 className="text-2xl font-bold text-white leading-tight mt-0.5 truncate">
+            <p className="text-sm text-slate-600 font-medium">Selamat Datang,</p>
+            <h2 className="text-2xl font-bold text-slate-900 leading-tight mt-0.5 truncate">
               {user.nama_lengkap.split(" ")[0]}!
             </h2>
-            <p className="text-[13px] text-orange-100 mt-1">
+            <p className="text-[13px] text-slate-600 font-medium mt-1">
               {new Date().toLocaleDateString("id-ID", {
                 weekday: "long",
                 day: "numeric",
@@ -414,7 +421,7 @@ export default function Dashboard() {
               })}
             </p>
           </div>
-          <div className="w-12 h-12 rounded-full bg-white/20 border border-white/40 text-white flex items-center justify-center text-sm font-bold shrink-0 backdrop-blur-sm">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-white/90 to-white/50 backdrop-blur-xl border border-white/70 text-orange-600 flex items-center justify-center text-sm font-bold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shrink-0">
             {initialsOf(user.nama_lengkap)}
           </div>
         </div>
@@ -422,66 +429,63 @@ export default function Dashboard() {
         {/* Status hari ini */}
         <div className="mt-6">
           {loadingStatus ? (
-            <p className="inline-flex items-center gap-2 text-sm text-white/90">
-              <Loader2 size={16} className="animate-spin" />
+            <p className="inline-flex items-center gap-2 text-sm text-slate-600 font-medium">
+              <Loader2 size={16} className="animate-spin text-orange-500" />
               Menyiapkan status...
             </p>
           ) : (
             <>
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center backdrop-blur-sm shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/25 shrink-0">
                   <StatusIcon size={22} />
                 </div>
                 <div className="min-w-0">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/20 border border-white/30 text-[11px] font-semibold backdrop-blur-sm">
-                    Status Hari Ini
-                  </span>
-                  <h3 className="text-2xl font-bold text-white mt-1 leading-tight">
+                  <span className={badgeOrange}>Status Hari Ini</span>
+                  <h3 className="text-xl font-bold text-slate-900 mt-1 leading-tight">
                     {statusMeta.label}
                   </h3>
                 </div>
               </div>
-              <p className="text-sm text-orange-50/95 mt-2">{statusMeta.desc}</p>
+              <p className="text-sm text-slate-600 font-medium mt-2">{statusMeta.desc}</p>
             </>
           )}
         </div>
 
-        {/* Chips ringkasan */}
+        {/* Badge ringkasan */}
         <div className="mt-5 flex flex-wrap gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/30 px-3 py-1.5 text-xs font-semibold backdrop-blur-sm">
+          <span className={badgeOrange}>
             <Clock size={13} />
             Masuk {clockInTime || "--:--"}
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/30 px-3 py-1.5 text-xs font-semibold backdrop-blur-sm">
+          <span className={badgeEmerald}>
             <LogOut size={13} />
             Pulang {clockOutTime || "--:--"}
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/30 px-3 py-1.5 text-xs font-semibold backdrop-blur-sm">
+          <span className={badgeOrange}>
             <NotebookPen size={13} />
             {jurnalDone ? "Jurnal Selesai" : "Jurnal Belum Diisi"}
           </span>
         </div>
-      </div>
-    </section>
+      </section>
     );
   };
 
   const renderQuickActions = () => (
-    <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-sm p-5 space-y-4 self-start">
+    <div className={`lg:col-span-2 ${glassCardSm} p-5 space-y-4 self-start`}>
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 text-orange-600 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/25">
           <Zap size={18} />
         </div>
         <div>
           <h3 className="text-base font-bold text-slate-900">Aksi Cepat</h3>
-          <p className="text-xs text-slate-500">Clock In & Clock Out harian</p>
+          <p className="text-xs text-slate-600 font-medium">Clock In & Clock Out harian</p>
         </div>
       </div>
 
       <button
         onClick={() => navigate("/presensi/kamera")}
         disabled={!canClockIn || isWeekendToday}
-        className="relative overflow-hidden w-full flex flex-col items-center justify-center gap-2 min-h-[88px] rounded-2xl bg-orange-600 hover:bg-orange-700 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none text-white font-semibold shadow-sm shadow-orange-600/25 hover:shadow-md hover:shadow-orange-600/30 transition-all duration-200 active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed"
+        className={actionBtn}
       >
         <Camera size={26} />
         Clock In
@@ -489,25 +493,25 @@ export default function Dashboard() {
       <button
         onClick={() => navigate("/presensi/kamera?tipe=pulang")}
         disabled={!canClockOut || isWeekendToday}
-        className="relative overflow-hidden w-full flex flex-col items-center justify-center gap-2 min-h-[88px] rounded-2xl bg-orange-600 hover:bg-orange-700 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none text-white font-semibold shadow-sm shadow-orange-600/25 hover:shadow-md hover:shadow-orange-600/30 transition-all duration-200 active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed"
+        className={actionBtn}
       >
         <LogOut size={26} />
         Clock Out
       </button>
 
-      <div className="pt-3 border-t border-slate-100 flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+      <div className="pt-3 border-t border-white/50 flex items-center gap-2.5">
+        <div className="w-9 h-9 rounded-xl bg-white/60 backdrop-blur-xl border border-white/60 text-slate-400 flex items-center justify-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shrink-0">
           <MapPin size={16} />
         </div>
-        <p className="text-xs text-slate-500">Lokasi GPS diambil otomatis di halaman kamera.</p>
+        <p className="text-xs text-slate-600 font-medium">Lokasi GPS diambil otomatis di halaman kamera.</p>
       </div>
 
       {isWeekendToday && (
         <div className="pt-1 flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-white/60 backdrop-blur-xl border border-white/60 text-slate-500 flex items-center justify-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shrink-0">
             <CalendarDays size={16} />
           </div>
-          <p className="text-xs font-medium text-slate-500">
+          <p className="text-xs font-medium text-slate-600">
             Hari libur akhir pekan — tombol Clock In / Clock Out dinonaktifkan.
           </p>
         </div>
@@ -539,14 +543,14 @@ export default function Dashboard() {
     ];
 
     return (
-      <div className="lg:col-span-3 bg-white rounded-3xl border border-slate-100 shadow-sm p-5">
+      <div className={`lg:col-span-3 ${glassCardSm} p-5`}>
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-white/60 backdrop-blur-xl border border-white/60 text-slate-500 flex items-center justify-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)]">
             <Clock size={18} />
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900">Aktivitas Hari Ini</h3>
-            <p className="text-xs text-slate-500">Timeline kehadiran & jurnal</p>
+            <p className="text-xs text-slate-600 font-medium">Timeline kehadiran & jurnal</p>
           </div>
         </div>
 
@@ -558,21 +562,21 @@ export default function Dashboard() {
               <li key={t.title} className="flex gap-3.5">
                 <div className="flex flex-col items-center">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center border shrink-0 ${
+                    className={`w-10 h-10 rounded-full flex items-center justify-center border shrink-0 backdrop-blur-xl ${
                       t.done
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-600"
-                        : "bg-slate-50 border-slate-200 text-slate-400"
+                        ? "bg-emerald-100/80 border-emerald-200/70 text-emerald-700"
+                        : "bg-white/60 border-white/60 text-slate-400"
                     }`}
                   >
                     <Icon size={17} />
                   </div>
-                  {!last && <div className="w-px flex-1 bg-slate-200 my-1.5" />}
+                  {!last && <div className="w-px flex-1 bg-white/60 my-1.5" />}
                 </div>
                 <div className={`min-w-0 ${last ? "pb-0" : "pb-5"}`}>
-                  <p className="text-sm font-semibold text-slate-900">{t.title}</p>
+                  <p className="text-sm font-bold text-slate-900">{t.title}</p>
                   <p
                     className={`text-sm truncate ${
-                      t.done ? "text-slate-700 font-medium" : "text-slate-400"
+                      t.done ? "text-slate-600 font-medium" : "text-slate-400"
                     }`}
                   >
                     {t.detail}
@@ -580,7 +584,7 @@ export default function Dashboard() {
                   {t.action && (
                     <button
                       onClick={() => setActiveView("jurnal")}
-                      className="mt-1.5 text-xs font-semibold text-orange-600 hover:text-orange-700 cursor-pointer"
+                      className="mt-1.5 text-xs font-bold text-orange-600 hover:text-orange-700 cursor-pointer"
                     >
                       {t.action} →
                     </button>
@@ -607,12 +611,12 @@ export default function Dashboard() {
       return (
         <article
           key={`log-${log.id || log.tanggal || idx}`}
-          className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center justify-between gap-3 transition-all duration-200 active:scale-[0.99]"
+          className="glass-card-sm p-4 flex items-center justify-between gap-3 transition-all duration-200 active:scale-[0.99]"
         >
           <div className="flex items-center gap-3 min-w-0">
             <div
-              className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${
-                masuk ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
+              className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 backdrop-blur-xl border border-white/60 ${
+                masuk ? "bg-emerald-100/80 text-emerald-700" : "bg-blue-100/80 text-blue-700"
               }`}
             >
               {masuk ? <LogIn size={20} /> : <LogOut size={20} />}
@@ -627,10 +631,10 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-lg font-bold text-slate-800 tracking-tight tabular-nums leading-none">
+            <p className="text-lg font-bold text-slate-900 tracking-tight tabular-nums leading-none">
               {formatWaktu(log.waktu_presensi)}
             </p>
-            <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
               WIB
             </p>
           </div>
@@ -641,22 +645,22 @@ export default function Dashboard() {
     const renderWeekendCard = (tg) => (
       <article
           key={`weekend-${tg}`}
-          className="bg-slate-100 border border-slate-200 rounded-2xl p-4 flex items-center justify-between gap-3 transition-all duration-200 active:scale-[0.99]"
+          className="glass-card-sm p-4 flex items-center justify-between gap-3 transition-all duration-200 active:scale-[0.99]"
         >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-11 h-11 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center shrink-0">
+          <div className="w-11 h-11 rounded-full bg-white/60 backdrop-blur-xl border border-white/60 text-slate-500 flex items-center justify-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shrink-0">
             <CalendarOff size={20} />
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">
               {formatTanggalSingkat(tg)}
             </p>
-            <h4 className="text-[15px] font-bold text-slate-500 truncate">
+            <h4 className="text-[15px] font-bold text-slate-600 truncate">
               Weekend / Libur Akhir Pekan
             </h4>
           </div>
         </div>
-        <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
+        <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full bg-white/70 backdrop-blur-md border border-white/60 text-slate-600 text-[11px] font-bold uppercase tracking-wider">
           Libur
         </span>
       </article>
@@ -711,66 +715,63 @@ export default function Dashboard() {
     }
 
     return (
-      <div className="-mx-4 -mt-5 pb-32">
-        {/* Banner seamless dengan top bar menyatu */}
-        <div className="relative">
-          <div className="bg-gradient-to-br from-orange-600 via-orange-500 to-amber-400 rounded-b-[2.5rem] shadow-lg shadow-orange-500/20 pt-4 pb-16">
-            <div className="px-4 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-white/20 border border-white/30 text-white shrink-0">
-                  <Zap size={18} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[13px] font-bold text-white leading-tight truncate">
-                    Pusdiklat Digital
-                  </p>
-                  <p className="text-[11px] text-orange-100 truncate">Dashboard Magang</p>
-                </div>
+      <div>
+        {/* Top bar kaca */}
+        <div className="bg-white/60 backdrop-blur-2xl border-b border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.04)]">
+          <div className="px-4 py-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="inline-flex items-center justify-center w-9 h-9 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25 shrink-0">
+                <Zap size={18} />
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <div className="w-9 h-9 rounded-full bg-white/20 border border-white/30 text-white flex items-center justify-center text-xs font-bold">
-                  {initialsOf(user.nama_lengkap)}
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="p-2 rounded-xl bg-white/15 border border-white/30 text-white hover:bg-white/25 transition-all duration-200 cursor-pointer"
-                  title="Logout"
-                >
-                  <LogOut size={16} />
-                </button>
+              <div className="min-w-0">
+                <p className="text-[13px] font-bold text-slate-900 leading-tight truncate">
+                  Pusdiklat Digital
+                </p>
+                <p className="text-[11px] text-slate-600 font-medium truncate">Dashboard Magang</p>
               </div>
             </div>
-          </div>
-
-          <div className="relative -mt-9 px-4">
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/60 p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 border border-orange-100 text-orange-600 text-[10px] font-bold tracking-[0.16em] uppercase">
-                    <History size={12} />
-                    Log Digital
-                  </span>
-                  <h3 className="mt-2.5 text-xl font-bold text-slate-900 tracking-tight leading-tight">
-                    RIWAYAT ABSENSI
-                  </h3>
-                  <p className="mt-1 text-xs font-normal text-slate-500">
-                    Seluruh catatan kehadiran Anda selama PKL
-                  </p>
-                </div>
-                <div className="w-11 h-11 rounded-2xl bg-orange-50 border border-orange-100 text-orange-600 flex items-center justify-center shrink-0 shadow-sm shadow-orange-100">
-                  <CalendarDays size={20} />
-                </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-white/90 to-white/50 backdrop-blur-xl border border-white/70 text-orange-600 flex items-center justify-center text-xs font-bold shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)]">
+                {initialsOf(user.nama_lengkap)}
               </div>
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-xl bg-white/50 backdrop-blur-xl border border-white/60 text-slate-400 hover:text-red-500 hover:bg-red-50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] transition-transform duration-200 active:scale-95 cursor-pointer"
+                title="Logout"
+              >
+                <LogOut size={16} />
+              </button>
             </div>
           </div>
         </div>
 
         <div className="px-4 mt-4 space-y-4">
+          {/* Kartu info */}
+          <section className={glassCard}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-100/80 backdrop-blur-md text-orange-700 text-[10px] font-bold tracking-[0.16em] uppercase">
+                  <History size={12} />
+                  Log Digital
+                </span>
+                <h3 className="mt-2.5 text-xl font-bold text-slate-900 tracking-tight leading-tight">
+                  RIWAYAT ABSENSI
+                </h3>
+                <p className="mt-1 text-xs text-slate-600 font-medium">
+                  Seluruh catatan kehadiran Anda selama PKL
+                </p>
+              </div>
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/25 shrink-0">
+                <CalendarDays size={20} />
+              </div>
+            </div>
+          </section>
+
           {/* Filter rentang tanggal */}
-          <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
+          <section className="glass-card-sm p-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <label className="block min-w-0">
-                <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
                   Dari Tanggal
                 </span>
                 <input
@@ -781,7 +782,7 @@ export default function Dashboard() {
                 />
               </label>
               <label className="block min-w-0">
-                <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
                   Sampai Tanggal
                 </span>
                 <input
@@ -794,7 +795,7 @@ export default function Dashboard() {
             </div>
             <button
               onClick={handleSaring}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold tracking-wide py-3 transition-all duration-200 active:scale-[0.98] cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold tracking-wide py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 ease-out active:scale-95 hover:opacity-90 cursor-pointer"
             >
               <Filter size={16} />
               Saring Data
@@ -805,29 +806,29 @@ export default function Dashboard() {
           <div className="flex items-center justify-between gap-3">
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100 rounded-xl px-4 py-2.5 text-xs font-semibold text-white transition-all duration-200 active:scale-[0.98] cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-indigo-600 shadow-lg shadow-indigo-500/25 rounded-2xl px-4 py-2.5 text-xs font-semibold text-white transition-all duration-300 ease-out active:scale-95 hover:opacity-90 cursor-pointer"
             >
               <Printer size={14} />
               Cetak Laporan PDF
             </button>
             <div className="flex items-center gap-5 shrink-0">
               <div className="text-right">
-                <p className="text-lg font-bold text-slate-800 tabular-nums leading-none">
+                <p className="text-lg font-bold text-slate-900 tabular-nums leading-none">
                   {totalCatatan}
                 </p>
-                <p className="mt-1 text-[10px] text-slate-400 font-medium tracking-wider uppercase">
+                <p className="mt-1 text-[10px] text-slate-600 font-medium tracking-wider uppercase">
                   Catatan
                 </p>
               </div>
               <div className="text-right">
                 <p
                   className={`text-lg font-bold tabular-nums leading-none ${
-                    totalTerlambat ? "text-slate-800" : "text-slate-300"
+                    totalTerlambat ? "text-slate-900" : "text-slate-300"
                   }`}
                 >
                   {totalTerlambat}
                 </p>
-                <p className="mt-1 text-[10px] text-slate-400 font-medium tracking-wider uppercase">
+                <p className="mt-1 text-[10px] text-slate-600 font-medium tracking-wider uppercase">
                   Terlambat
                 </p>
               </div>
@@ -836,30 +837,30 @@ export default function Dashboard() {
 
           {/* Daftar riwayat */}
           {historiLoading ? (
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center justify-center py-14 text-slate-500">
+            <div className="glass-card-sm p-4 flex items-center justify-center py-14 text-slate-600">
               <Loader2 size={24} className="animate-spin mr-2 text-orange-500" />
               Memuat riwayat...
             </div>
           ) : historiError ? (
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center py-14 gap-3 text-center px-6">
+            <div className="glass-card-sm p-4 flex flex-col items-center justify-center py-14 gap-3 text-center px-6">
               <AlertCircle size={32} className="text-red-400" />
               <p className="text-slate-600 font-medium">{historiError}</p>
               <button
                 onClick={fetchHistori}
-                className="mt-1 text-xs font-semibold text-orange-600 hover:text-orange-700 underline cursor-pointer"
+                className="mt-1 text-xs font-bold text-orange-600 hover:text-orange-700 underline cursor-pointer"
               >
                 Coba lagi
               </button>
             </div>
           ) : list.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center py-14 gap-3 text-center px-6">
-              <div className="w-16 h-16 rounded-2xl bg-orange-50 border border-orange-100 text-orange-400 flex items-center justify-center">
+            <div className="glass-card-sm p-4 flex flex-col items-center justify-center py-14 gap-3 text-center px-6">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-100/80 to-amber-100/80 backdrop-blur-xl border border-orange-200/60 text-orange-400 flex items-center justify-center">
                 <CalendarDays size={32} />
               </div>
               <p className="text-slate-600 font-medium">
                 Belum ada catatan pada rentang tanggal ini.
               </p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 font-medium">
                 Sesuaikan rentang tanggal atau lakukan Clock-In dari halaman Home.
               </p>
             </div>
@@ -879,22 +880,22 @@ export default function Dashboard() {
 
   const renderJurnalView = () => (
     <div className="space-y-5">
-      <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-xl bg-orange-600 text-white flex items-center justify-center shadow-sm shadow-orange-600/25">
+      <div className="flex items-center gap-3 glass-card-sm p-3 pr-5">
+        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/25">
           <NotebookPen size={22} />
         </div>
         <div>
           <h3 className="text-xl font-bold text-slate-900">Jurnal Harian</h3>
-          <p className="text-sm text-slate-500">Catat kegiatan magang Anda.</p>
+          <p className="text-sm text-slate-600 font-medium">Catat kegiatan magang Anda.</p>
         </div>
       </div>
 
       {jurnalMessage && (
         <div
-          className={`flex items-start gap-2 rounded-2xl px-4 py-3 text-sm border ${
+          className={`flex items-start gap-2 rounded-2xl px-4 py-3 text-sm border backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] ${
             jurnalMessage.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-              : "bg-red-50 border-red-200 text-red-600"
+              ? "bg-emerald-50/80 border-emerald-200/70 text-emerald-700"
+              : "bg-red-50/80 border-red-200/70 text-red-600"
           }`}
         >
           {jurnalMessage.type === "success" ? (
@@ -907,17 +908,17 @@ export default function Dashboard() {
       )}
 
       {jurnalDone ? (
-        <section className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5">
+        <section className="glass-card-sm p-5 mb-5 bg-emerald-50/60">
           <div className="flex items-center gap-3 mb-2">
             <CheckCircle2 size={22} className="text-emerald-600" />
-            <h4 className="text-slate-900 font-semibold">Jurnal Hari Ini Sudah Diisi</h4>
+            <h4 className="text-slate-900 font-bold">Jurnal Hari Ini Sudah Diisi</h4>
           </div>
           <p className="text-sm text-emerald-700">
             Judul: {todayJurnal.judul_kegiatan}
           </p>
         </section>
       ) : (
-        <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <section className={glassCard}>
           <form onSubmit={handleSubmitJurnal} className="space-y-5">
             <div>
               <label htmlFor="judul" className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -974,36 +975,36 @@ export default function Dashboard() {
     ];
     return (
       <div className="space-y-5">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-orange-600 text-white flex items-center justify-center shadow-sm shadow-orange-600/25">
+        <div className="flex items-center gap-3 glass-card-sm p-3 pr-5">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/25">
             <UserCircle2 size={22} />
           </div>
           <div>
             <h3 className="text-xl font-bold text-slate-900">Profil Saya</h3>
-            <p className="text-sm text-slate-500">Informasi akun Anda.</p>
+            <p className="text-sm text-slate-600 font-medium">Informasi akun Anda.</p>
           </div>
         </div>
 
-        <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-4">
-          <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-            <div className="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-100 text-orange-600 flex items-center justify-center text-lg font-bold shrink-0">
+        <section className={`${glassCard} space-y-4`}>
+          <div className="flex items-center gap-3 pb-4 border-b border-white/50">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center text-lg font-bold shadow-lg shadow-orange-500/25 shrink-0">
               {initialsOf(user.nama_lengkap)}
             </div>
             <div className="min-w-0">
               <p className="text-sm font-bold text-slate-900 truncate">{user.nama_lengkap}</p>
-              <p className="text-xs text-slate-500 capitalize">{user.role}</p>
+              <p className="text-xs text-slate-600 font-medium capitalize">{user.role}</p>
             </div>
           </div>
           {rows.map((r) => {
             const Icon = r.icon;
             return (
               <div key={r.label} className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-white/60 backdrop-blur-xl border border-white/60 text-slate-400 flex items-center justify-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shrink-0">
                   <Icon size={19} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-slate-500">{r.label}</p>
-                  <p className="text-sm font-semibold text-slate-900 truncate capitalize">
+                  <p className="text-xs text-slate-600 font-medium">{r.label}</p>
+                  <p className="text-sm font-bold text-slate-900 truncate capitalize">
                     {r.value}
                   </p>
                 </div>
@@ -1014,7 +1015,7 @@ export default function Dashboard() {
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 min-h-[52px] bg-white hover:bg-red-50 border border-red-200 text-red-600 font-semibold rounded-2xl transition-all duration-200 active:scale-[0.98] shadow-sm cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 min-h-[52px] bg-white/70 hover:bg-red-50/70 backdrop-blur-xl border border-white/60 text-red-600 font-semibold rounded-2xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8),0_8px_24px_0_rgba(31,38,135,0.06)] transition-all duration-300 ease-out active:scale-95 cursor-pointer"
         >
           <LogOut size={20} />
           Logout
@@ -1024,23 +1025,41 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-32">
-      {activeView !== "presensi" && renderHeader()}
+    <div className="relative min-h-screen text-slate-900 pb-32 overflow-x-hidden">
+      {/* Liquid backdrop */}
+      <div
+        className="fixed inset-0 z-0 bg-gradient-to-br from-orange-400/20 via-slate-50 to-emerald-400/20"
+        aria-hidden="true"
+      />
+      {/* Ambient glow circles */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute -top-20 -left-16 w-80 h-80 rounded-full bg-gradient-to-br from-orange-400/25 via-slate-50 to-transparent blur-3xl" />
+        <div className="absolute top-1/3 -right-24 w-96 h-96 rounded-full bg-gradient-to-br from-emerald-400/20 via-transparent to-slate-50 blur-3xl" />
+        <div className="absolute bottom-10 left-1/4 w-80 h-80 rounded-full bg-gradient-to-br from-orange-300/20 via-slate-50 to-emerald-300/20 blur-3xl" />
+      </div>
 
-      <main className="max-w-2xl mx-auto px-4 py-5 space-y-5">
-        {activeView === "home" && (
-          <>
-            {renderHero()}
-            {renderActionCenter()}
-          </>
-        )}
-        {activeView === "presensi" && renderPresensiView()}
-        {activeView === "jurnal" && renderJurnalView()}
-        {activeView === "profil" && renderProfilView()}
-      </main>
+      <div className="relative z-10">
+        {activeView !== "presensi" && renderHeader()}
 
-      {/* Floating rounded bottom navigation */}
-      <nav className="fixed bottom-4 left-4 right-4 z-50 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-full shadow-2xl p-2 flex justify-around items-center max-w-md mx-auto">
+        <main
+          className={`max-w-2xl mx-auto px-4 pb-4 space-y-5 ${
+            activeView !== "presensi" ? "pt-20" : ""
+          }`}
+        >
+          {activeView === "home" && (
+            <>
+              {renderHero()}
+              {renderActionCenter()}
+            </>
+          )}
+          {activeView === "presensi" && renderPresensiView()}
+          {activeView === "jurnal" && renderJurnalView()}
+          {activeView === "profil" && renderProfilView()}
+        </main>
+      </div>
+
+      {/* Floating bottom navigation */}
+      <nav className="fixed bottom-4 left-4 right-4 z-50 max-w-md mx-auto rounded-full bg-white/80 backdrop-blur-3xl border border-white/60 shadow-2xl py-3 px-5 flex justify-around items-center">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const active = activeView === item.id;
@@ -1048,12 +1067,14 @@ export default function Dashboard() {
             <button
               key={item.id}
               onClick={() => setActiveView(item.id)}
-              className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-1.5 rounded-full transition-all duration-200 cursor-pointer ${
-                active ? "bg-orange-50 text-orange-600" : "text-slate-400 hover:text-slate-600"
+              className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-1.5 rounded-full transition-all duration-300 ease-out cursor-pointer ${
+                active
+                  ? "bg-gradient-to-b from-white/95 to-white/60 backdrop-blur-xl border border-white/70 text-orange-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9),0_4px_12px_0_rgba(249,115,22,0.18)]"
+                  : "text-slate-400 hover:text-slate-600"
               }`}
             >
               <Icon size={20} strokeWidth={active ? 2.4 : 2} />
-              <span className={`text-[10px] font-semibold ${active ? "text-orange-600" : "text-slate-400"}`}>
+              <span className={`text-[10px] font-bold ${active ? "text-orange-600" : "font-semibold text-slate-400"}`}>
                 {item.label}
               </span>
             </button>
